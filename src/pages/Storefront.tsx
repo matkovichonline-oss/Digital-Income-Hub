@@ -12,7 +12,9 @@ export const Storefront = () => {
           <h1 className="gradient-text">Your Storefront</h1>
           <p className="text-muted">Manage your public digital products catalog.</p>
         </div>
-        <button className="btn btn-primary btn-glow">Preview Public Store</button>
+        <a href="/" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-glow" style={{ textDecoration: 'none' }}>
+          Preview Public Store
+        </a>
       </div>
 
       <div className="grid grid-cols-3">
