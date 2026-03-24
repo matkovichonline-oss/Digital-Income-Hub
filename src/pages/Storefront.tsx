@@ -1,9 +1,26 @@
-import { ShoppingCart, Bitcoin } from 'lucide-react';
-import { PRODUCTS } from '../data/products';
-import { usePayments } from '../hooks/usePayments';
+import { useState } from 'react';
+import { Pencil, Trash2, Plus } from 'lucide-react';
+import { useProducts } from '../hooks/useProducts';
+import { ProductFormModal } from '../components/ProductFormModal';
+import type { Product } from '../data/products';
 
 export const Storefront = () => {
-  const { processPayPal, processCrypto, isProcessing } = usePayments();
+  const { products, addProduct, updateProduct, deleteProduct } = useProducts();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+
+  const handleOpenModal = (product?: Product) => {
+    setProductToEdit(product || null);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveProduct = (productData: Omit<Product, 'id'> | Product) => {
+    if ('id' in productData) {
+      updateProduct(productData.id, productData);
+    } else {
+      addProduct(productData);
+    }
+  };
 
   return (
     <div className="animate-fade-in">
@@ -12,13 +29,18 @@ export const Storefront = () => {
           <h1 className="gradient-text">Your Storefront</h1>
           <p className="text-muted">Manage your public digital products catalog.</p>
         </div>
-        <a href="/" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-glow" style={{ textDecoration: 'none' }}>
-          Preview Public Store
-        </a>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={() => handleOpenModal()} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Plus size={18} /> Add Product
+          </button>
+          <a href="/" target="_blank" rel="noopener noreferrer" className="btn btn-primary btn-glow" style={{ textDecoration: 'none' }}>
+            Preview Public Store
+          </a>
+        </div>
       </div>
 
       <div className="grid grid-cols-3">
-        {PRODUCTS.map(product => (
+        {products.map(product => (
           <div key={product.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column' }}>
             <div style={{ 
               height: '160px', 
@@ -47,28 +69,37 @@ export const Storefront = () => {
                 <span className="badge" style={{ color: 'red', borderColor: 'red' }}>Sold Out</span>
               }
             </div>
-            <div style={{ display: 'grid', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <button 
-                className="btn btn-primary" 
-                style={{ width: '100%' }}
-                onClick={() => processPayPal(product)}
-                disabled={isProcessing}
+                className="btn btn-outline" 
+                onClick={() => handleOpenModal(product)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                <ShoppingCart size={18} /> Buy with PayPal
+                <Pencil size={18} /> Edit
               </button>
               <button 
                 className="btn btn-outline" 
-                style={{ width: '100%', borderColor: '#f7931a', color: '#f7931a' }}
-                onClick={() => processCrypto(product)}
-                disabled={isProcessing}
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to delete this product?')) {
+                    deleteProduct(product.id);
+                  }
+                }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#ef4444', borderColor: '#ef4444' }}
               >
-                <Bitcoin size={18} /> Pay with Crypto
+                <Trash2 size={18} /> Delete
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      <ProductFormModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveProduct}
+        productToEdit={productToEdit}
+        key={isModalOpen ? (productToEdit ? productToEdit.id : 'new') : 'closed'}
+      />
     </div>
   );
 };
-
